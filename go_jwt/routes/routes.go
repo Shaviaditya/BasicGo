@@ -2,6 +2,7 @@ package routes
 
 import (
 	"time"
+
 	"github.com/Shaviaditya/BasicGo/go_jwt/database"
 	"github.com/Shaviaditya/BasicGo/go_jwt/models"
 	"github.com/gofiber/fiber/v2"
@@ -28,7 +29,8 @@ func Signup(c *fiber.Ctx) error{
 		return c.Status(503).Send([]byte(err.Error()))
 	}
 	db.Create(&details)
-	return c.JSON(details)	
+	return c.Redirect("/login")
+	// return c.JSON(details)	
 }
 func Login(c *fiber.Ctx) error{
 	db := database.DBConn
@@ -49,13 +51,25 @@ func Login(c *fiber.Ctx) error{
 	claims:= token.Claims.(jwt.MapClaims)
 	claims["sub"] = "LoggedIn"
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
-	t, err := token.SignedString([]byte("secret"))
+	_,err := token.SignedString([]byte("secret"))
 	if err != nil {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	/* return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"token": t,
 		"user": details.Email,
+	}) */
+	// fmt.Println(t)
+	return c.Redirect("/users",fiber.StatusOK)
+}
+func LoginGet(c *fiber.Ctx) error {
+	return c.Render("login", fiber.Map{
+		"Title":"Hello World",
+	})
+}
+func SignupGet(c *fiber.Ctx) error {
+	return c.Render("signup", fiber.Map{
+		"Title":"Hello World",
 	})
 }
 func GetUsers(c *fiber.Ctx) error{
